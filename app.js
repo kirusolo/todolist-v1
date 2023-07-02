@@ -61,6 +61,20 @@ app.post("/", function (req, res) {
   res.redirect("/");
 });
 
+app.post("/delete", function (req, res) {
+  const itemId = req.body.itemId;
+
+  Item.findByIdAndRemove(itemId)
+    .then(() => {
+      console.log("Successfully deleted");
+      res.redirect("/");
+    })
+    .catch((err) => {
+      console.error(err);
+      res.status(500).send("Error occurred while deleting the item.");
+    });
+});
+
 app.get("/work", function (req, res) {
   res.render("list", { listTitle: "work list", newListItems: workItems });
 });
