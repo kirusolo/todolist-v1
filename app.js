@@ -30,7 +30,15 @@ const item3 = new Item({
 });
 
 const defaultItems = [item1, item2, item3];
+//this schema is we use when we try using the route and pass through there for instanse /work or whatever and there is below the logic of the rest
+const listSchema = {
+  name: String,
+  items: [itemsSchema],
+};
 
+const List = mongoose.model("List", listSchema);
+
+//this get method is to put may lists the using the insertMany mongodb syntax
 app.get("/", function (req, res) {
   Item.find({}).then((foundItems) => {
     if (foundItems.length === 0) {
@@ -52,13 +60,55 @@ app.get("/", function (req, res) {
   });
 });
 
+//.............this below code works to make another lists and it works by using / in the url whatever we wnat to create new lists
+
+app.get("/:customListName", function (req, res) {
+  const customListName = req.params.customListName;
+
+  List.findOne({ name: customListName })
+    .exec()
+    .then(function (foundList) {
+      if (!foundList) {
+        //  create a new list
+
+        const newList = new List({
+          name: customListName,
+          items: defaultItems,
+        });
+        newList.save();
+        res.redirect("/" + customListName);
+      } else {
+        // it shows an existing list
+        res.render("list", {
+          listTitle: foundList.name,
+          newListItems: foundList.items,
+        });
+      }
+    })
+    .catch(function (err) {
+      console.log(err);
+    });
+});
+
 app.post("/", function (req, res) {
   const itemName = req.body.newItem;
+  const listName = req.body.list;
   const item = new Item({
     name: itemName,
   });
-  item.save();
-  res.redirect("/");
+
+  if (listName === "Today") {
+    item.save();
+    res.redirect("/");
+  } else {
+    List.findOne({ name: listName })
+      .exec()
+      .then(function (foundList) {
+        foundList.items.push(item);
+        foundList.save();
+        res.redirect("/" + listName);
+      });
+  }
 });
 
 app.post("/delete", function (req, res) {
@@ -75,15 +125,11 @@ app.post("/delete", function (req, res) {
     });
 });
 
-app.get("/work", function (req, res) {
-  res.render("list", { listTitle: "work list", newListItems: workItems });
-});
-
-app.post("/work", function (req, res) {
-  let item = req.body.newItem;
-  workItems.push(item);
-  res.redirect("/work");
-});
+// app.post("/work", function (req, res) {
+//   let item = req.body.newItem;
+//   workItems.push(item);
+//   res.redirect("/work");
+// });
 
 app.get("/about", function (req, res) {
   res.render("about");
