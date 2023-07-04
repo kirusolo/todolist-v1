@@ -8,8 +8,12 @@ app.set("view engine", "ejs");
 
 app.use(bodyParser.urlencoded({ extended: true }));
 app.use(express.static("public"));
-
-mongoose.connect("mongodb://localhost:27017/todolistDB");
+mongoose.connect(
+  "mongodb+srv://kirubelbaye2:kiru4168@kiraxculster.htj5936.mongodb.net/todolistDd?retryWrites=true&w=majority"
+);
+// mongoose.connect(
+//   "mongodb+srv://kirubelendala15:kirubel4168@cluster0.exapfsl.mongodb.net/?retryWrites=true&w=majority/todolistDB"
+// );
 
 const itemsSchema = {
   name: String,
@@ -96,7 +100,7 @@ app.post("/", function (req, res) {
   const item = new Item({
     name: itemName,
   });
-
+  // this one if we are in the custom list the one we get using / and when we try to add new item it checks the if statement
   if (listName === "Today") {
     item.save();
     res.redirect("/");
